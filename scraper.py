@@ -275,7 +275,17 @@ def collect_notes(page: Page) -> List[Dict]:
                         note_data = extract_note_data(page)
                         all_notes.append(note_data)
                         
-                        logger.info(f"Nota coletada: {note_data.get('numero_nfse', 'N/A')}")
+                        # Monta log rico com detalhes da nota
+                        log_msg = f"Nota coletada: DPS {note_data.get('numero_dps', 'N/A')}"
+                        if note_data.get('valor_total'):
+                             log_msg += f" - Valor: R$ {note_data.get('valor_total')}"
+                        elif note_data.get('valor_servicos'):
+                             log_msg += f" - Valor: R$ {note_data.get('valor_servicos')}"
+                        
+                        if note_data.get('tomador_razao_social'):
+                             log_msg += f" - Tomador: {note_data.get('tomador_razao_social')}"
+                             
+                        logger.info(log_msg)
                         
                         # Fecha detalhe
                         close_note_detail(page)

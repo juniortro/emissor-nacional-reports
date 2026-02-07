@@ -69,6 +69,8 @@ def extract_note_data(page: Page) -> dict:
         # Número do DPS - linha 202
         numero_elem = page.query_selector('h3.panel-title:has-text("Identificação do DPS") + .panel-body .form-group:has-text("Número") span.texto')
         data['numero_dps'] = clean_text(numero_elem.inner_text()) if numero_elem else ""
+        # Assume numero da NFSe como numero do DPS para compatibilidade
+        data['numero_nfse'] = data['numero_dps']
     except Exception as e:
         logger.debug(f"Erro ao extrair numero_dps: {e}")
         data['numero_dps'] = ""
