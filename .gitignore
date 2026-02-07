@@ -27,6 +27,11 @@ wheels/
 venv/
 ENV/
 env/
+.venv/
+
+# Debug e Temporários
+html_nota_detalhe_completo.html
+nota_debug.png
 
 # Credenciais
 .env

@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    print("\n╔═══════════════════════════════════════════════════════════╗")
-    print("║          DEBUG - Captura de Estrutura HTML              ║")
-    print("╚═══════════════════════════════════════════════════════════╝\n")
+    print("\n===========================================================")
+    print("          DEBUG - Captura de Estrutura HTML              ")
+    print("===========================================================\n")
     
     auth_manager = None
     
@@ -113,7 +113,7 @@ def main():
                         pass
             
             # Busca por divs com classes/ids relevantes
-            print(f"\n🔍 Procurando elementos com IDs/classes relevantes...")
+            print(f"\nProcurando elementos com IDs/classes relevantes...")
             keywords = ['numero', 'data', 'valor', 'prestador', 'tomador', 'iss', 'cnpj', 'cpf']
             
             for keyword in keywords:
