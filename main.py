@@ -40,9 +40,9 @@ def setup_logging():
 def print_banner():
     """Exibe banner inicial"""
     banner = """
-╔═══════════════════════════════════════════════════════════╗
-║          Exportador de NFSe - Emissor Nacional           ║
-╚═══════════════════════════════════════════════════════════╝
+===========================================================
+           Exportador de NFSe - Emissor Nacional           
+===========================================================
     """
     print(banner)
 
@@ -50,13 +50,13 @@ def print_banner():
 def print_summary(notes_count: int, excel_file: str, elapsed_time: float):
     """Exibe resumo da execução"""
     summary = f"""
-╔═══════════════════════════════════════════════════════════╗
-║                    RESUMO DA EXECUÇÃO                     ║
-╠═══════════════════════════════════════════════════════════╣
-║  Notas coletadas: {notes_count:<39} ║
-║  Arquivo gerado:  {excel_file:<39} ║
-║  Tempo decorrido: {elapsed_time:.2f}s{' ' * (39 - len(f'{elapsed_time:.2f}s'))} ║
-╚═══════════════════════════════════════════════════════════╝
+===========================================================
+                    RESUMO DA EXECUÇÃO                     
+===========================================================
+   Notas coletadas: {notes_count:<39} 
+   Arquivo gerado:  {excel_file:<39} 
+   Tempo decorrido: {elapsed_time:.2f}s{' ' * (39 - len(f'{elapsed_time:.2f}s'))} 
+===========================================================
     """
     print(summary)
 
@@ -101,7 +101,7 @@ def main():
         
         if not notes:
             logger.warning("Nenhuma nota foi coletada!")
-            print("\n⚠️  AVISO: Nenhuma nota encontrada no período especificado.")
+            print("\nAVISO: Nenhuma nota encontrada no período especificado.")
             return 1
         
         # Geração de relatório
@@ -123,21 +123,21 @@ def main():
         
         print_summary(len(notes), excel_file, elapsed_time)
         
-        print(f"\n✅ Exportação concluída com sucesso!")
-        print(f"📄 Relatório: {excel_file}")
-        print(f"📝 Log: {log_filename}\n")
+        print(f"\nExportação concluída com sucesso!")
+        print(f"Relatório: {excel_file}")
+        print(f"Log: {log_filename}\n")
         
         return 0
         
     except KeyboardInterrupt:
         logger.warning("Execução interrompida pelo usuário")
-        print("\n⚠️  Execução cancelada pelo usuário.")
+        print("\nExecução cancelada pelo usuário.")
         return 130
         
     except Exception as e:
         logger.error(f"Erro durante execução: {str(e)}", exc_info=True)
-        print(f"\n❌ Erro: {str(e)}")
-        print(f"📝 Verifique o log para mais detalhes: {log_filename}\n")
+        print(f"\nErro: {str(e)}")
+        print(f"Verifique o log para mais detalhes: {log_filename}\n")
         return 1
         
     finally:

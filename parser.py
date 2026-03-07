@@ -69,6 +69,8 @@ def extract_note_data(page: Page) -> dict:
         # Número do DPS - linha 202
         numero_elem = page.query_selector('h3.panel-title:has-text("Identificação do DPS") + .panel-body .form-group:has-text("Número") span.texto')
         data['numero_dps'] = clean_text(numero_elem.inner_text()) if numero_elem else ""
+        # Assume numero da NFSe como numero do DPS para compatibilidade
+        data['numero_nfse'] = data['numero_dps']
     except Exception as e:
         logger.debug(f"Erro ao extrair numero_dps: {e}")
         data['numero_dps'] = ""
@@ -133,23 +135,69 @@ def extract_note_data(page: Page) -> dict:
         data['tomador_cpf_cnpj'] = ""
         data['tomador_municipio'] = ""
     else:
+        # Tenta estratégia 1: Painel explícito "Tomador" (similar ao Emitente)
         try:
-            tomador_razao_elem = page.query_selector('.pnlSujeito .form-group:has-text("Razão Social") span.texto, .pnlSujeito .form-group:has-text("Nome") span.texto')
+            # Razão Social
+            tomador_razao_elem = page.query_selector('h3.panel-title:has-text("Tomador") + .panel-body .form-group:has-text("Razão Social") span.texto')
+            if not tomador_razao_elem:
+                # Tenta "Nome"
+                tomador_razao_elem = page.query_selector('h3.panel-title:has-text("Tomador") + .panel-body .form-group:has-text("Nome") span.texto')
+            
             data['tomador_razao_social'] = clean_text(tomador_razao_elem.inner_text()) if tomador_razao_elem else ""
-        except:
+        except Exception:
             data['tomador_razao_social'] = ""
-        
+
         try:
-            tomador_doc_elem = page.query_selector('.pnlSujeito .form-group:has-text("CNPJ") span.texto, .pnlSujeito .form-group:has-text("CPF") span.texto')
+            # CPF/CNPJ
+            tomador_doc_elem = page.query_selector('h3.panel-title:has-text("Tomador") + .panel-body .form-group:has-text("CNPJ") span.texto')
+            if not tomador_doc_elem:
+                 tomador_doc_elem = page.query_selector('h3.panel-title:has-text("Tomador") + .panel-body .form-group:has-text("CPF") span.texto')
+            
             data['tomador_cpf_cnpj'] = extract_number(tomador_doc_elem.inner_text()) if tomador_doc_elem else ""
-        except:
+        except Exception:
             data['tomador_cpf_cnpj'] = ""
-        
+
         try:
-            tomador_mun_elem = page.query_selector('.pnlSujeito .form-group:has-text("Município") span.texto')
-            data['tomador_municipio'] = clean_text(tomador_mun_elem.inner_text()) if tomador_mun_elem else ""
-        except:
+            # Endereço/Município
+            tomador_mun_elem = page.query_selector('h3.panel-title:has-text("Tomador") + .panel-body .form-group:has-text("Município") span.texto')
+            if not tomador_mun_elem:
+                 # Tenta pegar do endereço completo se não tiver campo específico
+                 tomador_end_elem = page.query_selector('h3.panel-title:has-text("Tomador") + .panel-body .form-group:has-text("Endereço") span.texto')
+                 if tomador_end_elem:
+                     end_text = tomador_end_elem.inner_text()
+                     match = re.search(r'([\w\s]+)/([A-Z]{2})', end_text)
+                     if match:
+                         data['tomador_municipio'] = match.group(1).strip()
+                     else:
+                         data['tomador_municipio'] = ""
+                 else:
+                     data['tomador_municipio'] = ""
+            else:
+                data['tomador_municipio'] = clean_text(tomador_mun_elem.inner_text())
+        except Exception:
             data['tomador_municipio'] = ""
+
+        # Estratégia 2: Fallback (código antigo / genérico) se dados continuam vazios
+        if not data.get('tomador_razao_social'):
+             try:
+                tomador_razao_elem = page.query_selector('.pnlSujeito .form-group:has-text("Razão Social") span.texto, .pnlSujeito .form-group:has-text("Nome") span.texto')
+                if tomador_razao_elem:
+                    data['tomador_razao_social'] = clean_text(tomador_razao_elem.inner_text())
+             except: pass
+
+        if not data.get('tomador_cpf_cnpj'):
+             try:
+                tomador_doc_elem = page.query_selector('.pnlSujeito .form-group:has-text("CNPJ") span.texto, .pnlSujeito .form-group:has-text("CPF") span.texto')
+                if tomador_doc_elem:
+                    data['tomador_cpf_cnpj'] = extract_number(tomador_doc_elem.inner_text())
+             except: pass
+
+        if not data.get('tomador_municipio'):
+             try:
+                tomador_mun_elem = page.query_selector('.pnlSujeito .form-group:has-text("Município") span.texto')
+                if tomador_mun_elem:
+                    data['tomador_municipio'] = clean_text(tomador_mun_elem.inner_text())
+             except: pass
     
     # === VALORES - TRIBUTAÇÃO MUNICIPAL ===
     # Painel "Tributação Municipal"
